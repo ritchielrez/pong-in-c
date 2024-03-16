@@ -1,0 +1,17 @@
+# Ignore caches from clangd
+.cache
+
+# Ignore local vscode config files
+.vscode
+
+# Ignore local visual studio files
+.vs
+
+# Ignore build directories
+build
+
+# Doxygen related stuffs
+docs/doxygen/build
+
+vendor/raylib-5.0
+vendor/glfw-3.4.bin.WIN64
