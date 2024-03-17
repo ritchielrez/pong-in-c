@@ -14,7 +14,7 @@ target_link_directories(main PRIVATE vendor/raylib-5.0/lib)
 target_link_libraries(main PRIVATE raylib)
 
 if(WIN32)
-	target_link_libraries(main PRIVATE opengl32 winmm gdi32)
+	target_link_libraries(main PRIVATE opengl32 winmm)
 	if(NOT MSVC)
 		target_link_libraries(main PRIVATE mingw32)
 	endif()
