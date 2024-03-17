@@ -11,11 +11,11 @@ add_executable(main src/main.c)
 target_include_directories(main PRIVATE vendor/raylib-5.0/include)
 target_link_directories(main PRIVATE vendor/raylib-5.0/lib)
 
-target_link_libraries(main PRIVATE raylib)
-
 if(WINDOWS)
 	target_link_libraries(main PRIVATE opengl32 winmm gdi32)
 	if(NOT MSVC)
 		target_link_libraries(main PRIVATE mingw32)
 	endif()
 endif()
+
+target_link_libraries(main PRIVATE raylib)
