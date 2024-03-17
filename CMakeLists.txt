@@ -11,16 +11,10 @@ add_executable(main src/main.c)
 target_include_directories(main PRIVATE vendor/raylib-5.0/include)
 target_link_directories(main PRIVATE vendor/raylib-5.0/lib)
 
-if(WINDOWS)
-	target_include_directories(main PRIVATE vendor/glfw-3.4.bin.WIN64/include)
-	if(NOT MSVC)
-		target_include_directories(main PRIVATE vendor/glfw-3.4.bin.WIN64/lib-mingw-w64)
-	endif()
-endif()
-
-target_link_libraries(main PRIVATE raylib opengl32 winmm)
+target_link_libraries(main PRIVATE raylib)
 
 if(WINDOWS)
+	target_link_libraries(main PRIVATE opengl32 winmm gdi32)
 	if(NOT MSVC)
 		target_link_libraries(main PRIVATE mingw32)
 	endif()
