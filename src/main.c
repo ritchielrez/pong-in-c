@@ -105,10 +105,14 @@ int main() {
       DrawCircleV(ball_center, ball_radius, ball_color);
       DrawRectangleV(player_pos[0], player_size, paddle_color);
       DrawRectangleV(player_pos[1], player_size, paddle_color);
-      DrawText(TextFormat("%02d", player_score[0]), width * 1 / 4 - 30, 0, 60,
-               fg);
-      DrawText(TextFormat("%02d", player_score[1]), width * 3 / 4 + 30, 0, 60,
-               fg);
+      DrawText(TextFormat("%02d", player_score[0]),
+               width * 1 / 4 -
+                   (MeasureText(TextFormat("%02d", player_score[0]), 60) / 2),
+               0, 60, fg);
+      DrawText(TextFormat("%02d", player_score[1]),
+               width * 3 / 4 -
+                   (MeasureText(TextFormat("%02d", player_score[0]), 60) / 2),
+               0, 60, fg);
     }
 
     // Update
