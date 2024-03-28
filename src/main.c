@@ -89,8 +89,11 @@ int main() {
     // Render
     if (gameOver) {
       const char *win_msg = TextFormat("Player %d won", winner_id + 1);
+      const char *restart_msg = "Press ENTER to restart";
       DrawText(win_msg, (width / 2) - (MeasureText(win_msg, 60) / 2),
                height / 2 - 60, 60, fg);
+      DrawText(restart_msg, (width / 2) - (MeasureText(restart_msg, 30) / 2),
+               (height / 2 - 60) + 90, 30, fg);
       if (IsKeyPressed(KEY_ENTER)) {
         gameOver = false;
         init();
