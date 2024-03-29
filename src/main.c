@@ -118,7 +118,7 @@ int main() {
     // Update
     if (ball_moving) {
       ball_move();
-    } else if (IsKeyPressed(KEY_ENTER)) {
+    } else if (IsKeyPressed(KEY_SPACE)) {
       ball_moving = true;
       ball_move();
     }
