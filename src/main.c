@@ -11,8 +11,8 @@ const uint32_t wall_padding = 10;
 
 const uint32_t max_score = 3;
 
-bool gameOver = false;
-bool ballMoving = false;
+bool game_over = false;
+bool ball_moving = false;
 
 Vector2 ball_center, ball_vel, player_pos[2], player_size;
 int32_t player_vel_y[2];
@@ -47,12 +47,12 @@ void ball_move() {
   if ((ball_center.x + ball_radius + ball_vel.x >= width - wall_padding &&
        ball_vel.x > 0)) {
     player_score[0]++;
-    ballMoving = false;
+    ball_moving = false;
     init();
   } else if ((ball_center.x + ball_vel.x <= 0 + wall_padding &&
               ball_vel.x < 0)) {
     player_score[1]++;
-    ballMoving = false;
+    ball_moving = false;
     init();
   }
   ball_center = Vector2Add(ball_center, ball_vel);
@@ -87,7 +87,7 @@ int main() {
     ClearBackground(bg);
 
     // Render
-    if (gameOver) {
+    if (game_over) {
       const char *win_msg = TextFormat("Player %d won", winner_id + 1);
       const char *restart_msg = "Press ENTER to restart";
       DrawText(win_msg, (width / 2) - (MeasureText(win_msg, 60) / 2),
@@ -95,7 +95,7 @@ int main() {
       DrawText(restart_msg, (width / 2) - (MeasureText(restart_msg, 30) / 2),
                (height / 2 - 60) + 90, 30, fg);
       if (IsKeyPressed(KEY_ENTER)) {
-        gameOver = false;
+        game_over = false;
         init();
         player_score[0] = 0;
         player_score[1] = 0;
@@ -116,10 +116,10 @@ int main() {
     }
 
     // Update
-    if (ballMoving) {
+    if (ball_moving) {
       ball_move();
     } else if (IsKeyPressed(KEY_ENTER)) {
-      ballMoving = true;
+      ball_moving = true;
       ball_move();
     }
 
@@ -152,10 +152,10 @@ int main() {
     // Check the player's scores
     if (player_score[0] == max_score) {
       winner_id = 0;
-      gameOver = true;
+      game_over = true;
     } else if (player_score[1] == max_score) {
       winner_id = 1;
-      gameOver = true;
+      game_over = true;
     }
 
     EndDrawing();
