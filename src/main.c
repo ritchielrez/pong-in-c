@@ -11,13 +11,19 @@ const uint32_t wall_padding = 10;
 
 const uint32_t max_score = 3;
 
-bool game_over = false;
 bool ball_moving = false;
+
+typedef enum {
+  screen_start,
+  screen_main,
+  screen_over,
+} GameScreen;
 
 Vector2 ball_center, ball_vel, player_pos[2], player_size;
 int32_t player_vel_y[2];
 uint32_t ball_radius = 10, player_score[2];
 uint8_t winner_id;
+GameScreen game_screen = screen_start;
 
 void init() {
   ball_center.x = width / 2;
@@ -86,76 +92,83 @@ int main() {
     BeginDrawing();
     ClearBackground(bg);
 
-    // Render
-    if (game_over) {
-      const char *win_msg = TextFormat("Player %d won", winner_id + 1);
-      const char *restart_msg = "Press ENTER to restart";
-      DrawText(win_msg, (width / 2) - (MeasureText(win_msg, 60) / 2),
-               height / 2 - 60, 60, fg);
-      DrawText(restart_msg, (width / 2) - (MeasureText(restart_msg, 30) / 2),
-               (height / 2 - 60) + 90, 30, fg);
-      if (IsKeyPressed(KEY_ENTER)) {
-        game_over = false;
-        init();
-        player_score[0] = 0;
-        player_score[1] = 0;
-        continue;
+    switch (game_screen) {
+      case screen_start: {
+        DrawText("Start screen",
+                 width / 2 - (MeasureText("Start screen", 60) / 2), 20, 60, fg);
+        break;
       }
-    } else {
-      DrawCircleV(ball_center, ball_radius, ball_color);
-      DrawRectangleV(player_pos[0], player_size, paddle_color);
-      DrawRectangleV(player_pos[1], player_size, paddle_color);
-      DrawText(TextFormat("%02d", player_score[0]),
-               width * 1 / 4 -
-                   (MeasureText(TextFormat("%02d", player_score[0]), 60) / 2),
-               0, 60, fg);
-      DrawText(TextFormat("%02d", player_score[1]),
-               width * 3 / 4 -
-                   (MeasureText(TextFormat("%02d", player_score[0]), 60) / 2),
-               0, 60, fg);
-    }
+      case screen_main: {
+        DrawCircleV(ball_center, ball_radius, ball_color);
+        DrawRectangleV(player_pos[0], player_size, paddle_color);
+        DrawRectangleV(player_pos[1], player_size, paddle_color);
+        DrawText(TextFormat("%02d", player_score[0]),
+                 width * 1 / 4 -
+                     (MeasureText(TextFormat("%02d", player_score[0]), 60) / 2),
+                 0, 60, fg);
+        DrawText(TextFormat("%02d", player_score[1]),
+                 width * 3 / 4 -
+                     (MeasureText(TextFormat("%02d", player_score[0]), 60) / 2),
+                 0, 60, fg);
+        if (ball_moving) {
+          ball_move();
+        } else if (IsKeyPressed(KEY_SPACE)) {
+          ball_moving = true;
+          ball_move();
+        }
 
-    // Update
-    if (ball_moving) {
-      ball_move();
-    } else if (IsKeyPressed(KEY_SPACE)) {
-      ball_moving = true;
-      ball_move();
-    }
+        // Player 0 movement
+        if (IsKeyDown(KEY_W) && player_pos[0].y > 0) {
+          player_pos[0].y -= player_vel_y[0];
+        }
+        if (IsKeyDown(KEY_S) && player_pos[0].y + player_size.y < height) {
+          player_pos[0].y += player_vel_y[0];
+        }
 
-    // Player 0 movement
-    if (IsKeyDown(KEY_W) && player_pos[0].y > 0) {
-      player_pos[0].y -= player_vel_y[0];
-    }
-    if (IsKeyDown(KEY_S) && player_pos[0].y + player_size.y < height) {
-      player_pos[0].y += player_vel_y[0];
-    }
+        if (IsKeyDown(KEY_UP) && player_pos[1].y > 0) {
+          player_pos[1].y -= player_vel_y[1];
+        }
+        if (IsKeyDown(KEY_DOWN) && player_pos[1].y + player_size.y < height) {
+          player_pos[1].y += player_vel_y[1];
+        }
 
-    if (IsKeyDown(KEY_UP) && player_pos[1].y > 0) {
-      player_pos[1].y -= player_vel_y[1];
-    }
-    if (IsKeyDown(KEY_DOWN) && player_pos[1].y + player_size.y < height) {
-      player_pos[1].y += player_vel_y[1];
-    }
+        // Collision detection between paddles and the ball
+        if (aabb_vs_circle_collision(player_pos[0], player_size, ball_center,
+                                     ball_radius)) {
+          ball_vel.x = fabsf(ball_vel.x);
+          ball_vel.y = ball_vel.y;
+        } else if (aabb_vs_circle_collision(player_pos[1], player_size,
+                                            ball_center, ball_radius)) {
+          ball_vel.x = -(fabsf(ball_vel.x));
+          ball_vel.y = ball_vel.y;
+        }
 
-    // Collision detection between paddles and the ball
-    if (aabb_vs_circle_collision(player_pos[0], player_size, ball_center,
-                                 ball_radius)) {
-      ball_vel.x = fabsf(ball_vel.x);
-      ball_vel.y = ball_vel.y;
-    } else if (aabb_vs_circle_collision(player_pos[1], player_size, ball_center,
-                                        ball_radius)) {
-      ball_vel.x = -(fabsf(ball_vel.x));
-      ball_vel.y = ball_vel.y;
-    }
+        // Check the player's scores
+        if (player_score[0] == max_score) {
+          winner_id = 0;
+          game_screen = screen_over;
+        } else if (player_score[1] == max_score) {
+          winner_id = 1;
+          game_screen = screen_over;
+        }
 
-    // Check the player's scores
-    if (player_score[0] == max_score) {
-      winner_id = 0;
-      game_over = true;
-    } else if (player_score[1] == max_score) {
-      winner_id = 1;
-      game_over = true;
+        break;
+      }
+      case screen_over: {
+        const char *win_msg = TextFormat("Player %d won", winner_id + 1);
+        const char *restart_msg = "Press ENTER to restart";
+        DrawText(win_msg, (width / 2) - (MeasureText(win_msg, 60) / 2),
+                 height / 2 - 60, 60, fg);
+        DrawText(restart_msg, (width / 2) - (MeasureText(restart_msg, 30) / 2),
+                 (height / 2 - 60) + 90, 30, fg);
+        if (IsKeyPressed(KEY_ENTER)) {
+          game_screen = screen_main;
+          init();
+          player_score[0] = 0;
+          player_score[1] = 0;
+        }
+        break;
+      }
     }
 
     EndDrawing();
