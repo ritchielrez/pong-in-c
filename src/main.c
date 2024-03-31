@@ -15,7 +15,7 @@ bool ball_moving = false;
 
 typedef enum {
   screen_start,
-  screen_main,
+  screen_gameplay,
   screen_over,
 } GameScreen;
 
@@ -98,7 +98,7 @@ int main() {
                  width / 2 - (MeasureText("Start screen", 60) / 2), 20, 60, fg);
         break;
       }
-      case screen_main: {
+      case screen_gameplay: {
         DrawCircleV(ball_center, ball_radius, ball_color);
         DrawRectangleV(player_pos[0], player_size, paddle_color);
         DrawRectangleV(player_pos[1], player_size, paddle_color);
@@ -162,7 +162,7 @@ int main() {
         DrawText(restart_msg, (width / 2) - (MeasureText(restart_msg, 30) / 2),
                  (height / 2 - 60) + 90, 30, fg);
         if (IsKeyPressed(KEY_ENTER)) {
-          game_screen = screen_main;
+          game_screen = screen_gameplay;
           init();
           player_score[0] = 0;
           player_score[1] = 0;
