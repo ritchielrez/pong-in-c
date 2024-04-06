@@ -34,6 +34,13 @@ uint32_t ball_radius = 10, player_score[2];
 uint8_t winner_id;
 GameScreen game_screen = screen_start;
 
+// Colors(Catppuccin color pallete)
+const Color bg = {30, 30, 46, 255};
+const Color fg = {205, 214, 244, 255};
+const Color btn_border = {203, 166, 247, 255};
+const Color ball_color = {243, 139, 168, 255};
+const Color paddle_color = {203, 166, 247, 255};
+
 void init() {
   ball_center.x = width / 2;
   ball_center.y = height / 2;
