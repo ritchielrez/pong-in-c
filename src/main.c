@@ -12,6 +12,7 @@ const uint32_t wall_padding = 10;
 const uint32_t max_score = 3;
 
 bool ball_moving = false;
+bool first_time = true;
 
 typedef enum {
   screen_start,
@@ -155,7 +156,6 @@ int main() {
         break;
       }
       case screen_gameplay: {
-        DrawCircleV(ball_center, ball_radius, ball_color);
         DrawRectangleV(player_pos[0], player_size, paddle_color);
         DrawRectangleV(player_pos[1], player_size, paddle_color);
         DrawText(TextFormat("%02d", player_score[0]),
@@ -166,7 +166,17 @@ int main() {
                  width * 3 / 4 -
                      (MeasureText(TextFormat("%02d", player_score[0]), 60) / 2),
                  0, 60, fg);
+
+        if (first_time) {
+          const char *text = "Press SPACE to start";
+          DrawText(text, (width / 2) - (MeasureText(text, 30) / 2),
+                   (height / 2) - 30 / 2, 30, fg);
+        } else {
+          DrawCircleV(ball_center, ball_radius, ball_color);
+        }
+
         if (ball_moving) {
+          first_time = false;
           ball_move();
         } else if (IsKeyPressed(KEY_SPACE)) {
           ball_moving = true;
