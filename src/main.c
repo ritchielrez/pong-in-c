@@ -19,6 +19,15 @@ typedef enum {
   screen_over,
 } GameScreen;
 
+typedef enum { button_normal, button_hover, button_pressed } ButtonState;
+
+typedef struct {
+  Rectangle rect;
+  ButtonState state;
+  const char *text;
+  uint32_t text_size;
+} Button;
+
 Vector2 ball_center, ball_vel, player_pos[2], player_size;
 int32_t player_vel_y[2];
 uint32_t ball_radius = 10, player_score[2];
@@ -72,13 +81,44 @@ bool aabb_vs_circle_collision(Vector2 box_pos, Vector2 box_size,
           (box_pos.y <= circle_center.y + circle_radius));
 }
 
-int main() {
-  // Colors(Catppuccin color pallete)
-  const Color bg = {.r = 30, .g = 30, .b = 46, .a = 255};
-  const Color fg = {.r = 205, .g = 214, .b = 244, .a = 255};
-  const Color ball_color = {.r = 243, .g = 139, .b = 168, .a = 255};
-  const Color paddle_color = {.r = 203, .g = 166, .b = 247, .a = 255};
+bool aabb_vs_point_collision(Rectangle rect, Vector2 point) {
+  return rect.x + rect.width > point.x && rect.x < point.x &&
+         rect.y + rect.height > point.y && rect.y < point.y;
+}
 
+Button button_begin(Rectangle *rect, const char *text, uint32_t text_size) {
+  Button button = {
+      .rect = *rect,
+      .state = button_normal,
+      .text = text,
+      .text_size = text_size,
+  };
+
+  float text_width = MeasureText(button.text, button.text_size);
+  float text_height = button.text_size;
+  Color text_fg;
+
+  Vector2 mouse_pos = GetMousePosition();
+  if (aabb_vs_point_collision(button.rect, mouse_pos)) {
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      button.state = button_pressed;
+    } else {
+      button.state = button_hover;
+    }
+    DrawRectangleRounded(button.rect, 10, 10, btn_border);
+    text_fg = bg;
+  } else {
+    DrawRectangleRoundedLines(button.rect, 10, 10, 2, btn_border);
+    text_fg = fg;
+  }
+  DrawText(button.text,
+           (button.rect.x + (button.rect.width / 2)) - (text_width / 2),
+           (button.rect.y + (button.rect.height / 2)) - (text_height / 2),
+           text_height, text_fg);
+  return button;
+}
+
+int main() {
   // Anti-aliasing, otherwise the shapes will have blurry outlines
   SetConfigFlags(FLAG_MSAA_4X_HINT);
   InitWindow(width, height, "pong");
@@ -94,8 +134,17 @@ int main() {
 
     switch (game_screen) {
       case screen_start: {
-        DrawText("Start screen",
-                 width / 2 - (MeasureText("Start screen", 60) / 2), 20, 60, fg);
+        DrawText("Pong", width / 2 - (MeasureText("Pong", 60) / 2), 20, 60, fg);
+
+        Rectangle rect = {.x = 0, .y = 0, .width = 150, .height = 60};
+        rect.x = (width / 2) - (rect.width / 2);
+        rect.y = (height / 2) - (rect.height / 2);
+        Button start_btn = button_begin(&rect, "Play", 30);
+
+        if (start_btn.state == button_pressed) {
+          game_screen = screen_gameplay;
+        }
+
         break;
       }
       case screen_gameplay: {
@@ -157,16 +206,21 @@ int main() {
       case screen_over: {
         const char *win_msg = TextFormat("Player %d won", winner_id + 1);
         const char *restart_msg = "Press ENTER to restart";
-        DrawText(win_msg, (width / 2) - (MeasureText(win_msg, 60) / 2),
-                 height / 2 - 60, 60, fg);
-        DrawText(restart_msg, (width / 2) - (MeasureText(restart_msg, 30) / 2),
-                 (height / 2 - 60) + 90, 30, fg);
-        if (IsKeyPressed(KEY_ENTER)) {
+        DrawText(win_msg, (width / 2) - (MeasureText(win_msg, 60) / 2), 20, 60,
+                 fg);
+
+        Rectangle rect = {.x = 0, .y = 0, .width = 160, .height = 60};
+        rect.x = (width / 2) - (rect.width / 2);
+        rect.y = (height / 2) - (rect.height / 2);
+        Button restart_btn = button_begin(&rect, "Restart", 30);
+
+        if (restart_btn.state == button_pressed) {
           game_screen = screen_gameplay;
           init();
           player_score[0] = 0;
           player_score[1] = 0;
         }
+
         break;
       }
     }
